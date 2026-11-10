@@ -1,233 +1,174 @@
+# Dwell Time Analytics
 
-# DwellTime-Documentation
+Snowflake Native App dashboard for camera metadata, detections, zone occupancy,
+visitor dwell time, and behaviour categories. Provider data is shared through
+the application package; camera and zone metadata are supplied by the consumer
+through Native App table references.
 
-## Retail Dwell Time Analytics Application
+## Marketplace Installation
 
-### 1. Overview
+For a published listing, open it in **Snowflake Marketplace**, select **Get**,
+choose the target account, and install the app. A listing must be published and
+available to the consumer account first. After installation, configure the app
+and references as described below.
 
-Dwell Time Analytics is an AI-powered retail video analytics application designed to monitor customer movement, measure time spent in different store zones, and generate actionable business insights.
+For this repository's package-based deployment, the provider creates
+`CV_APP_PACKAGE_V2` with `scripts/2. create-package.sql`, stages the six app
+files, and installs the app with `scripts/3. build_app.sql`. The equivalent
+consumer install command is:
 
-The application integrates Computer Vision, Neural Networks, Vision Language Models (VLM), Snowflake Cortex AI, and Streamlit to provide intelligent retail analytics.
-
-### 2. Key Features
-
-- Customer detection and movement tracking
-- Customer dwell time calculation
-- Zone-wise customer activity analysis
-- Customer entry and exit monitoring
-- Frame-level video analysis and summarization
-- Vision Language Model-based Visual Question Answering (VQA)
-- AI-generated retail insights using Snowflake Cortex
-- Interactive analytics dashboard using Streamlit
-
-### 3. Technology Stack
-
-| Component | Technology |
-|-----------|------------|
-| Programming Language | Python |
-| Application Framework | Streamlit |
-| Computer Vision | OpenCV |
-| AI/ML | Deep Learning, Neural Networks |
-| Video Intelligence | Detection and Tracking Models |
-| Visual Question Answering | Vision Language Model (VLM) |
-| Cloud Data Platform | Snowflake |
-| Generative AI | Snowflake Cortex AI |
-| Data Processing | Python, Pandas, Snowpark |
-| Database | Snowflake SQL |
-
-### 4. Application Architecture
-
-Video Input
-    |
-    v
-Frame Extraction & Preprocessing
-    |
-    v
-Neural Network Inference
-    |
-    +-- Customer Detection
-    +-- Customer Tracking
-    +-- Zone Identification
-    +-- Dwell Time Calculation
-    |
-    v
-Vision Language Model (VQA)
-    |
-    +-- Frame Understanding
-    +-- Visual Question Answering
-    +-- Scene Summarization
-    |
-    v
-Snowflake Database
-    |
-    +-- Detection Data
-    +-- Tracking Data
-    +-- Frame Summaries
-    +-- Zone Analytics
-    +-- Dwell Time Records
-    |
-    v
-Snowflake Cortex AI
-    |
-    +-- Natural Language Insights
-    +-- Analytics Summarization
-    |
-    v
-Streamlit Analytics Dashboard
-
-### 5. AI and Neural Network Components
-
-**Customer Detection**
-
-Neural networks identify customers within video frames and generate object-level detection information.
-
-**Customer Tracking**
-
-Tracking models associate detected customers across consecutive frames to analyze movement patterns.
-
-**Dwell Time Analytics**
-
-Calculates the duration customers spend within predefined retail zones using tracking information and timestamps.
-
-**Vision Language Model (VLM)**
-
-Enables intelligent interpretation of retail video frames through Visual Question Answering.
-
-Example questions:
-- How many customers are visible?
-- Which store zone is most crowded?
-- What activities are occurring in the scene?
-- Summarize customer activity in this frame.
-
-### 6. Snowflake Integration
-
-Snowflake serves as the central platform for storing processed video analytics data and generating AI-powered insights.
-
-**Database:** RETAIL_ANALYTICS
-
-**Schema:** DWELL_TIME
-
-#### Database Tables
-
-| Table | Description |
-|-------|-------------|
-| VIDEO_METADATA | Video information, source, duration and processing status |
-| FRAME_METADATA | Frame ID, timestamp and processing details |
-| DETECTION_DATA | Customer detection results and bounding-box coordinates |
-| TRACKING_DATA | Customer tracking IDs, positions and timestamps |
-| ZONE_DWELL_TIME | Zone entry, exit and dwell duration |
-| FRAME_SUMMARY | VLM-generated frame descriptions |
-| VQA_RESULTS | Visual questions and AI-generated answers |
-| CORTEX_INSIGHTS | AI-generated analytics summaries |
-
-#### Snowflake Services
-
-- Snowflake SQL for structured analytics storage
-- Snowpark Python for data processing
-- Snowflake Cortex AI for natural-language summaries and insights
-- Snowflake Connector for Python for database connectivity
-
-### 7. Streamlit Dashboard
-
-The Streamlit application provides:
-
-- Video upload and processing
-- Customer detection visualization
-- Tracking and movement analysis
-- Zone-wise dwell time analytics
-- Customer traffic statistics
-- Frame-level AI summaries
-- VQA interaction
-- Snowflake-powered analytics
-- AI-generated retail insights
-
-### 8. Installation and Setup
-
-#### Step 1: Clone Repository
-
-```bash
-git clone <repository-url>
-cd DwellTime-Documentation
+```sql
+CREATE APPLICATION CV_APP_V2
+  FROM APPLICATION PACKAGE CV_APP_PACKAGE_V2
+  USING '@CV_APP_PACKAGE_V2.APP_SRC.STAGE';
 ```
 
-#### Step 2: Create Virtual Environment
+## Native App Configuration
 
-```bash
-python -m venv venv
+1. In **Snowsight > Data Products > Apps**, open **Dwell Time Analytics**.
+2. Grant the app access to a warehouse. The consumer role launching Streamlit
+  also needs `USAGE` on that warehouse.
+3. Open the app's configuration/references page. For **Zones Table**, select
+  `MLOPS_2.CV_APP_SCHEMA_V2.CV_ZONES` and approve `SELECT`; for **Cameras
+  Table**, select `MLOPS_2.CV_APP_SCHEMA_V2.CV_CAMERAS` and approve `SELECT`.
+4. Open the app's Streamlit interface. It should show the selected camera,
+  four KPIs, people-in-frame and zone-occupancy charts, average dwell time,
+  behaviour mix, and a longest-dwell table.
+
+The reference names and requested privileges are:
+
+| Reference | Bind to | Required privilege |
+|---|---|---|
+| Zones Table (`zone_table`) | `MLOPS_2.CV_APP_SCHEMA_V2.CV_ZONES` | `SELECT` |
+| Cameras Table (`camera_table`) | `MLOPS_2.CV_APP_SCHEMA_V2.CV_CAMERAS` | `SELECT` |
+
+The contract is defined in `app/src/manifest.yml`. The Streamlit app uses the
+`snowflake.permissions` SDK to request references that have not yet been bound
+and read the selected associations. Snowflake invokes the app's
+`UPDATE_REFERENCE` callback when a binding changes. The consumer role needs the
+`CV_APP_V2.app_instance_role` application role; grant it to additional account
+roles when sharing the app within the account.
+
+## Required Privileges
+
+| Principal | Required access | Purpose |
+|---|---|---|
+| Consumer account role | `CV_APP_V2.app_instance_role` | Use the app's Streamlit, view, UDF, and procedures. |
+| Consumer account role | `USAGE` on the selected warehouse | Run the Streamlit app and its queries. |
+| App reference `zone_table` | `SELECT` on `CV_ZONES` | Read zone names and join detections to zones. |
+| App reference `camera_table` | `SELECT` on `CV_CAMERAS` | Read the camera details shown in the dashboard. |
+
+The references request only `SELECT`; they do not grant the app access to other
+consumer tables.
+
+## Consumer Table Schemas
+
+Create and load these tables in `MLOPS_2.CV_APP_SCHEMA_V2`. The schemas and seed
+data are in `1. prepare_data.sql` and `app/data/`.
+
+| Table | Columns |
+|---|---|
+| `CV_CAMERAS` | `CAMERA_ID VARCHAR(20)`, `CAMERA_NAME VARCHAR(60)`, `LOCATION VARCHAR(60)`, `FPS NUMBER(38,0)`, `WIDTH NUMBER(38,0)`, `HEIGHT NUMBER(38,0)` |
+| `CV_ZONES` | `ZONE_ID VARCHAR(10)`, `ZONE_NAME VARCHAR(30)`, `X_MIN NUMBER(38,0)`, `Y_MIN NUMBER(38,0)`, `X_MAX NUMBER(38,0)`, `Y_MAX NUMBER(38,0)` |
+
+Example camera row:
+
+```text
+CAM_01, Store Entrance Cam, Main Floor, 1, 1280, 720
 ```
 
-#### Step 3: Activate Virtual Environment
+Example zone rows:
 
-Windows:
-
-```bash
-venv\Scripts\activate
+```text
+Z1, ENTRANCE, 0, 260, 320, 720
+Z2, AISLE, 320, 0, 900, 720
+Z3, CHECKOUT, 900, 200, 1280, 720
 ```
 
-Linux/macOS:
+The provider detection table `MLOPS_2.CV_APP_SCHEMA_V2.CV_DETECTIONS` contains
+`CAMERA_ID VARCHAR(20)`, `FRAME_NUMBER NUMBER(38,0)`, `TS_SECOND NUMBER(38,0)`,
+`TRACK_ID VARCHAR(10)`, `CLASS_NAME VARCHAR(30)`, `CONFIDENCE FLOAT`, bounding
+box fields `X`, `Y`, `W`, `H` and center fields `CX`, `CY` (all
+`NUMBER(38,0)`), and `ZONE_ID VARCHAR(10)`. The sample dataset has 5,700 rows,
+40 tracked people, one camera, and three zones. This provider data is exposed
+to the app through the package's `shared_content_schema.CV_DETECTIONS` view; it
+is not a consumer reference.
 
-```bash
-source venv/bin/activate
+## Sample Data for Functional Review
+
+The small, synthetic CSV bundle prepared for `SFMARKETPLACEOPS.R_PROD3` is in
+[`sfmarketplaceops/`](sfmarketplaceops/README.md):
+[`CV_CAMERAS.csv`](sfmarketplaceops/CV_CAMERAS.csv),
+[`CV_ZONES.csv`](sfmarketplaceops/CV_ZONES.csv),
+[`CV_DETECTIONS.csv`](sfmarketplaceops/CV_DETECTIONS.csv), and
+[`DWELL_TIME_TEST_CASES.csv`](sfmarketplaceops/DWELL_TIME_TEST_CASES.csv).
+The detections include consecutive one-second visits that produce dwell-time
+results. The bundle README documents the schemas, import steps, and expected
+results. For an app-level test, the detections CSV must populate the provider
+source table behind the package's shared `CV_DETECTIONS` view, while the camera
+and zone tables are bound as consumer references. These files are prepared for
+CSV delivery; they are not automatically shared with or uploaded to the
+Snowflake review account.
+
+## Streamlit Usage
+
+Open the installed app from **Data Products > Apps > CV_APP_V2** after binding
+both references. The dashboard
+shows the bound camera, visitor and detection KPIs, people-in-frame and zone
+occupancy charts, average dwell time, behaviour mix, and longest dwell visits.
+The installed Native App currently provides the analytics workflow; video
+upload and frame extraction are not enabled in the packaged app.
+
+## Functions, Procedures, and Views
+
+Objects are created by `app/src/setup.sql` in `CV_APP_V2.app_instance_schema`.
+
+| Object | Type | Purpose |
+|---|---|---|
+| `CV_DETECTIONS` | View | Reads the provider's shared detection data. |
+| `DWELL_CATEGORY(INT)` | Python UDF | Maps duration to `PASSING`, `BROWSING`, `ENGAGED`, or `LOITERING`; `NULL` maps to `UNKNOWN`. |
+| `BILLING_EVENT(INT)` | Python procedure | Example billing hook; returns a confirmation string. |
+| `UPDATE_REFERENCE(STRING, STRING, STRING)` | SQL procedure | Native App callback for adding, removing, or clearing a bound reference. |
+| `STREAMLIT` | Streamlit object | Default analytics dashboard. |
+
+The separate `scripts/5. video_to_frames.sql` procedure is a provider-side
+prototype; it is not installed or exposed by the Native App package.
+
+## Example SQL
+
+Run as a role granted `CV_APP_V2.app_instance_role`:
+
+```sql
+-- Shared detection view
+SELECT CAMERA_ID, TS_SECOND, TRACK_ID, CLASS_NAME, CONFIDENCE, ZONE_ID
+FROM CV_APP_V2.app_instance_schema.CV_DETECTIONS
+LIMIT 10;
+
+-- Example behaviour categories
+SELECT CV_APP_V2.app_instance_schema.DWELL_CATEGORY(7)  AS SHORT_VISIT,
+       CV_APP_V2.app_instance_schema.DWELL_CATEGORY(60) AS LONGER_VISIT;
+
+-- Dwell visits from consecutive per-second detections
+WITH sequenced AS (
+  SELECT TRACK_ID, ZONE_ID, TS_SECOND,
+       TS_SECOND - ROW_NUMBER() OVER (
+         PARTITION BY TRACK_ID, ZONE_ID ORDER BY TS_SECOND
+       ) AS visit_group
+  FROM CV_APP_V2.app_instance_schema.CV_DETECTIONS
+), visits AS (
+  SELECT TRACK_ID, ZONE_ID, visit_group, COUNT(*) AS DWELL_SECONDS
+  FROM sequenced
+  GROUP BY TRACK_ID, ZONE_ID, visit_group
+)
+SELECT TRACK_ID, ZONE_ID, DWELL_SECONDS,
+     CV_APP_V2.app_instance_schema.DWELL_CATEGORY(DWELL_SECONDS) AS BEHAVIOUR
+FROM visits
+ORDER BY DWELL_SECONDS DESC;
+
+-- Example procedure call
+CALL CV_APP_V2.app_instance_schema.BILLING_EVENT(5700);
+
+-- Example consumer camera and zone rows
+SELECT * FROM MLOPS_2.CV_APP_SCHEMA_V2.CV_CAMERAS;
+SELECT * FROM MLOPS_2.CV_APP_SCHEMA_V2.CV_ZONES;
 ```
-
-#### Step 4: Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-#### Step 5: Configure Snowflake
-
-Create a `.env` file with the following configuration:
-
-```env
-SNOWFLAKE_ACCOUNT=your_account
-SNOWFLAKE_USER=your_username
-SNOWFLAKE_PASSWORD=your_password
-SNOWFLAKE_WAREHOUSE=your_warehouse
-SNOWFLAKE_DATABASE=RETAIL_ANALYTICS
-SNOWFLAKE_SCHEMA=DWELL_TIME
-```
-
-#### Step 6: Run Streamlit Application
-
-```bash
-streamlit run app.py
-```
-
-Open the application at:
-
-http://localhost:8501
-
-### 9. Application Workflow
-
-1. Upload retail surveillance video.
-2. Extract and preprocess video frames.
-3. Perform customer detection and tracking.
-4. Calculate customer dwell time across store zones.
-5. Generate frame summaries and VQA responses.
-6. Store processed analytics in Snowflake.
-7. Generate business insights using Snowflake Cortex AI.
-8. Visualize results through the Streamlit dashboard.
-
-### 10. Retail Business Applications
-
-- Customer engagement analysis
-- Store layout optimization
-- High-traffic zone identification
-- Customer movement analysis
-- Product placement evaluation
-- Staff allocation planning
-- Retail operational intelligence
-
-### 11. Conclusion
-
-Dwell Time Analytics combines Computer Vision, Neural Networks, Vision Language Models, Snowflake Cortex AI, and Streamlit to transform retail surveillance videos into structured analytics and actionable business intelligence.
-
-The solution enables retailers to understand customer behavior, optimize store operations, and make data-driven decisions.
-
----
-
-**Project:** Retail Dwell Time Analytics  
-**Platform:** Python | AI/ML | Snowflake | Streamlit  
-**Application Type:** AI-Powered Retail Video Analytics

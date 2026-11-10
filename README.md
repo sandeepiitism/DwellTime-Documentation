@@ -94,22 +94,6 @@ box fields `X`, `Y`, `W`, `H` and center fields `CX`, `CY` (all
 to the app through the package's `shared_content_schema.CV_DETECTIONS` view; it
 is not a consumer reference.
 
-## Sample Data for Functional Review
-
-The small, synthetic CSV bundle prepared for `SFMARKETPLACEOPS.R_PROD3` is in
-[`sfmarketplaceops/`](sfmarketplaceops/README.md):
-[`CV_CAMERAS.csv`](sfmarketplaceops/CV_CAMERAS.csv),
-[`CV_ZONES.csv`](sfmarketplaceops/CV_ZONES.csv),
-[`CV_DETECTIONS.csv`](sfmarketplaceops/CV_DETECTIONS.csv), and
-[`DWELL_TIME_TEST_CASES.csv`](sfmarketplaceops/DWELL_TIME_TEST_CASES.csv).
-The detections include consecutive one-second visits that produce dwell-time
-results. The bundle README documents the schemas, import steps, and expected
-results. For an app-level test, the detections CSV must populate the provider
-source table behind the package's shared `CV_DETECTIONS` view, while the camera
-and zone tables are bound as consumer references. These files are prepared for
-CSV delivery; they are not automatically shared with or uploaded to the
-Snowflake review account.
-
 ## Streamlit Usage
 
 Open the installed app from **Data Products > Apps > CV_APP_V2** after binding

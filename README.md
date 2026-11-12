@@ -1,4 +1,4 @@
-# Dwell Time Analytics
+# Dwell Time Analytics V1.0
 
 Snowflake Native App dashboard for camera metadata, detections, zone occupancy,
 visitor dwell time, and behaviour categories.
@@ -9,14 +9,14 @@ references.
 
 ## Marketplace Installation
 
-The Dwell Time Analytics application is installed directly from Snowflake
+The Dwell Time Analytics V1.0 application is installed directly from Snowflake
 Marketplace.
 
 To install the application:
 
 1. Sign in to Snowsight.
 2. Open **Snowflake Marketplace**.
-3. Locate the **Dwell Time Analytics** application.
+3. Locate the **Dwell Time Analytics V1.0** application.
 4. Select **Get**.
 5. Follow the Marketplace installation prompts.
 6. After installation, open the application from **Data Products > Apps**.
@@ -43,7 +43,7 @@ For example:
 
 After installing the application:
 
-1. In **Snowsight > Data Products > Apps**, open **Dwell Time Analytics**.
+1. In **Snowsight > Data Products > Apps**, open **Dwell Time Analytics V1.0**.
 
 2. Grant the application access to a warehouse. The consumer role launching
    Streamlit also requires `USAGE` on that warehouse.
@@ -241,7 +241,7 @@ does not need to create this dataset.
 After installing the application and binding both consumer table references:
 
 1. Open **Snowsight > Data Products > Apps**.
-2. Open the installed **Dwell Time Analytics** application.
+2. Open the installed **Dwell Time Analytics V1.0** application.
 3. Open the application's Streamlit interface.
 4. Confirm that the required `CV_CAMERAS` and `CV_ZONES` references are
    configured.

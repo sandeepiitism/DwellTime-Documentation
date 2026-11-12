@@ -325,13 +325,14 @@ SELECT
 FROM visit*
 ORDER BY DWELL_SECONDS DESC;
 ```
-*### Example Procedure Call
+### Example Procedure Call
 
-```sql*CALL <installed_app_name>.app_instance_schema.BILLING_EVENT(5700);
-``*
+```sql
+CALL <installed_app_name>.app_instance_schema.BILLING_EVENT(5700);
+```
 
 ### Verify Consumer Camera Data
-*```sql
+```sql
 SELECT *
 FROM <your_database>.<your_schema>.CV_CAMERAS;
 ```

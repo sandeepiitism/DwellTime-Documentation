@@ -1,30 +1,36 @@
 # Dwell Time Analytics V1.0
 
-Snowflake Native App dashboard for camera metadata, detections, zone occupancy,
-visitor dwell time, and behaviour categories.
+Dwell Time Analytics V1.0 is a Snowflake Native App that provides an interactive Streamlit dashboard for camera metadata, detections, zone occupancy, visitor dwell time, and behaviour categories.
 
-Provider detection data is delivered through the Snowflake Native App, while
-camera and zone metadata are supplied by the consumer through Native App table
-references.
+The current Marketplace version uses provider-supplied, pre-processed detection data. Camera and zone metadata are supplied by the consumer through Native App table references.
+
+Consumers are not required to upload or process video.
+
+## Marketplace Release Information
+
+- Listing name: `DWELL_TIME_ANALYTICS_V1.0`
+- Marketplace title: `Dwell Time Analytics V1.0`
+- Published application version: `V2`
+- Published patch: `0`
+
+The application package is managed by the provider. Consumers do not create, configure, or deploy an application package.
 
 ## Marketplace Installation
 
-The Dwell Time Analytics V1.0 application is installed directly from Snowflake
-Marketplace.
+Dwell Time Analytics V1.0 is installed directly from Snowflake Marketplace.
 
 To install the application:
 
 1. Sign in to Snowsight.
-2. Open **Snowflake Marketplace**.
-3. Locate the **Dwell Time Analytics V1.0** application.
-4. Select **Get**.
+2. Open Snowflake Marketplace.
+3. Locate Dwell Time Analytics V1.0.
+4. Select Get.
 5. Follow the Marketplace installation prompts.
-6. After installation, open the application from **Data Products > Apps**.
+6. After installation, open the application from Data Products > Apps.
 7. Configure the required table references as described below.
 8. Open the Streamlit application.
 
-No local Python environment, Snowflake credentials, application package
-creation, or manual Native App deployment is required by the consumer.
+No local Python environment, Snowflake credentials, application package creation, or manual Native App deployment is required by the consumer.
 
 ## Native App Configuration
 
@@ -33,7 +39,8 @@ The application requires access to two consumer-owned Snowflake tables:
 - `CV_CAMERAS`
 - `CV_ZONES`
 
-These tables can exist in any database and schema accessible to the consumer.
+These tables can exist in a database and schema owned and controlled by the consumer.
+
 For example:
 
 ```text
@@ -43,76 +50,57 @@ For example:
 
 After installing the application:
 
-1. In **Snowsight > Data Products > Apps**, open **Dwell Time Analytics V1.0**.
+1. In Snowsight > Data Products > Apps, open the installed Dwell Time Analytics V1.0 application.
 
-2. Grant the application access to a warehouse. The consumer role launching
-   Streamlit also requires `USAGE` on that warehouse.
+2. Grant the application access to a warehouse. The consumer role launching Streamlit also requires `USAGE` on that warehouse.
 
 3. Open the application's configuration/references page.
 
-4. For **Cameras Table**, select the consumer-owned:
+4. For Cameras Table, select the consumer-owned table:
 
-   ```text
-   <your_database>.<your_schema>.CV_CAMERAS
-   ```
+```text
+<your_database>.<your_schema>.CV_CAMERAS
+```
 
-   and approve `SELECT`.
+Approve `SELECT` access.
 
-5. For **Zones Table**, select the consumer-owned:
+5. For Zones Table, select the consumer-owned table:
 
-   ```text
-   <your_database>.<your_schema>.CV_ZONES
-   ```
+```text
+<your_database>.<your_schema>.CV_ZONES
+```
 
-   and approve `SELECT`.
+Approve `SELECT` access.
 
 6. Open the application's Streamlit interface.
 
-Once both references are configured, the dashboard should display the selected
-camera, four KPIs, people-in-frame and zone-occupancy charts, average dwell
-time, behaviour mix, and a longest-dwell table.
+Once both references are configured, the dashboard displays camera information, KPIs, people-in-frame analytics, zone occupancy, average dwell time, behaviour categories, and longest-dwell visits.
 
-The reference names and requested privileges are:
+## Table References
 
-| Reference | Bind to | Required privilege |
+| Reference | Consumer Table | Required Privilege |
 |---|---|---|
 | Zones Table (`zone_table`) | `<your_database>.<your_schema>.CV_ZONES` | `SELECT` |
 | Cameras Table (`camera_table`) | `<your_database>.<your_schema>.CV_CAMERAS` | `SELECT` |
 
-The Streamlit application uses the `snowflake.permissions` SDK to request
-references that have not yet been bound and to read the selected associations.
+The Streamlit application uses the `snowflake.permissions` SDK to request references that have not yet been bound and to read the selected associations.
 
-Snowflake invokes the application's `UPDATE_REFERENCE` callback when a
-reference binding changes.
-
-The consumer role needs the `CV_APP_V2.app_instance_role` application role to
-access the application's Streamlit interface and application objects. This
-application role can be granted to additional account roles when access to the
-application needs to be shared within the consumer account.
+Snowflake invokes the application's `UPDATE_REFERENCE` callback when a reference binding changes.
 
 ## Required Privileges
 
-| Principal | Required access | Purpose |
+| Principal | Required Access | Purpose |
 |---|---|---|
-| Consumer account role | `CV_APP_V2.app_instance_role` | Use the application's Streamlit interface, view, UDF, and procedures. |
-| Consumer account role | `USAGE` on the selected warehouse | Run the Streamlit application and its queries. |
-| App reference `zone_table` | `SELECT` on the consumer's `CV_ZONES` table | Read zone definitions and join detections to zones. |
-| App reference `camera_table` | `SELECT` on the consumer's `CV_CAMERAS` table | Read camera metadata used by the dashboard. |
+| Consumer account role | Application role `app_instance_role` | Access the application's Streamlit interface and application objects |
+| Consumer account role | `USAGE` on the selected warehouse | Run the Streamlit application and its queries |
+| App reference `zone_table` | `SELECT` on the consumer's `CV_ZONES` table | Read zone definitions |
+| App reference `camera_table` | `SELECT` on the consumer's `CV_CAMERAS` table | Read camera metadata |
 
-The application references request only `SELECT` access. They do not grant the
-application access to other consumer tables.
+The application references request only `SELECT` access to the two selected consumer tables. They do not provide access to other consumer tables.
 
 ## Consumer Table Schemas
 
-The consumer must provide two tables in their own Snowflake database and
-schema:
-
-- `CV_CAMERAS`
-- `CV_ZONES`
-
-The database and schema names are determined by the consumer.
-
-For example:
+The consumer must provide the following two tables in their own Snowflake database and schema:
 
 ```text
 <your_database>.<your_schema>.CV_CAMERAS
@@ -132,7 +120,7 @@ The `CV_CAMERAS` table contains camera metadata used by the application.
 | `WIDTH` | `NUMBER(38,0)` |
 | `HEIGHT` | `NUMBER(38,0)` |
 
-The consumer can create the table using:
+Create the table using:
 
 ```sql
 CREATE TABLE <your_database>.<your_schema>.CV_CAMERAS (
@@ -151,7 +139,7 @@ Example row:
 CAM_01, Store Entrance Cam, Main Floor, 1, 1280, 720
 ```
 
-Example SQL for inserting this row:
+Example insert:
 
 ```sql
 INSERT INTO <your_database>.<your_schema>.CV_CAMERAS
@@ -162,8 +150,7 @@ VALUES
 
 ### CV_ZONES
 
-The `CV_ZONES` table defines the retail zones used by the dwell-time
-application.
+The `CV_ZONES` table defines the retail zones used by the dwell-time application.
 
 | Column | Data Type |
 |---|---|
@@ -174,7 +161,7 @@ application.
 | `X_MAX` | `NUMBER(38,0)` |
 | `Y_MAX` | `NUMBER(38,0)` |
 
-The consumer can create the table using:
+Create the table using:
 
 ```sql
 CREATE TABLE <your_database>.<your_schema>.CV_ZONES (
@@ -195,7 +182,7 @@ Z2, AISLE, 320, 0, 900, 720
 Z3, CHECKOUT, 900, 200, 1280, 720
 ```
 
-Example SQL for inserting these rows:
+Example insert:
 
 ```sql
 INSERT INTO <your_database>.<your_schema>.CV_ZONES
@@ -208,8 +195,7 @@ VALUES
 
 ## Provider Detection Data
 
-The application uses provider-supplied detection data exposed through the
-Native App as the `CV_DETECTIONS` view.
+The current application uses provider-supplied, pre-processed detection data that is exposed to the Native App through the `CV_DETECTIONS` view.
 
 The detection data contains:
 
@@ -229,27 +215,23 @@ The detection data contains:
 | `CY` | `NUMBER(38,0)` |
 | `ZONE_ID` | `VARCHAR(10)` |
 
-The sample provider dataset contains 5,700 rows, 40 tracked people, one camera,
-and three zones.
+The sample provider dataset contains 5,700 rows, 40 tracked people, one camera, and three zones.
 
-This provider data is exposed to the installed application through the
-`CV_DETECTIONS` view. It is not a consumer table reference and the consumer
-does not need to create this dataset.
+This provider data is exposed through the application's `CV_DETECTIONS` view. It is not a consumer table reference, and the consumer does not need to create or load this detection dataset.
 
 ## Streamlit Usage
 
-After installing the application and binding both consumer table references:
+After installing Dwell Time Analytics V1.0 and binding both consumer table references:
 
-1. Open **Snowsight > Data Products > Apps**.
-2. Open the installed **Dwell Time Analytics V1.0** application.
-3. Open the application's Streamlit interface.
-4. Confirm that the required `CV_CAMERAS` and `CV_ZONES` references are
-   configured.
+1. Open Snowsight > Data Products > Apps.
+2. Open the installed Dwell Time Analytics V1.0 application.
+3. Open the Streamlit interface.
+4. Confirm that `CV_CAMERAS` and `CV_ZONES` are configured.
 5. View the dwell-time analytics dashboard.
 
 Once configured, the dashboard displays:
 
-- Bound camera information
+- Camera information
 - Visitor and detection KPIs
 - People-in-frame analytics
 - Zone occupancy
@@ -257,56 +239,61 @@ Once configured, the dashboard displays:
 - Behaviour categories
 - Longest dwell visits
 
-The installed Native App currently provides the analytics workflow. Video
-upload and frame extraction are not enabled in the packaged Marketplace
-application.
+The current Marketplace version provides analytics using pre-processed detection data.
+
+Video upload, frame extraction, video processing, conversational analytics, and natural-language interaction are not enabled in this version.
 
 ## Functions, Procedures, and Views
 
-The following objects are available under:
+The application exposes its objects through the installed application's `app_instance_schema`.
+
+In the examples below:
 
 ```text
-CV_APP_V2.app_instance_schema
+<installed_app_name>
 ```
+
+represents the application name assigned during Marketplace installation.
+
+The following objects are available:
 
 | Object | Type | Purpose |
 |---|---|---|
-| `CV_DETECTIONS` | View | Provides access to the provider's shared detection data. |
-| `DWELL_CATEGORY(INT)` | Python UDF | Maps dwell duration to `PASSING`, `BROWSING`, `ENGAGED`, or `LOITERING`; `NULL` maps to `UNKNOWN`. |
-| `BILLING_EVENT(INT)` | Python procedure | Example billing hook that returns a confirmation string. |
-| `UPDATE_REFERENCE(STRING, STRING, STRING)` | SQL procedure | Native App callback for adding, removing, or clearing a bound reference. |
-| `STREAMLIT` | Streamlit object | Provides the default dwell-time analytics dashboard. |
+| `CV_DETECTIONS` | View | Provides access to provider-supplied detection data |
+| `DWELL_CATEGORY(INT)` | Python UDF | Maps dwell duration to `PASSING`, `BROWSING`, `ENGAGED`, or `LOITERING`; `NULL` maps to `UNKNOWN` |
+| `BILLING_EVENT(INT)` | Python procedure | Returns a confirmation string for the application's billing-event example |
+| `UPDATE_REFERENCE(STRING, STRING, STRING)` | SQL procedure | Callback used when adding, removing, or clearing a table reference |
+| `STREAMLIT` | Streamlit object | Provides the dwell-time analytics dashboard |
 
 ## Example SQL
 
-Run the following examples using a role that has been granted:
+Use `<installed_app_name>` below as the name of the Native App installed from Snowflake Marketplace.
 
-```text
-CV_APP_V2.app_instance_role
-```
-
-### Query detection data
-
-```sql
-SELECT CAMERA_ID,
-       TS_SECOND,
-       TRACK_ID,
-       CLASS_NAME,
-       CONFIDENCE,
-       ZONE_ID
-FROM CV_APP_V2.app_instance_schema.CV_DETECTIONS
-LIMIT 10;
-```
-
-### Calculate example behaviour categories
+### Query Detection Data
 
 ```sql
 SELECT
-    CV_APP_V2.app_instance_schema.DWELL_CATEGORY(7) AS SHORT_VISIT,
-    CV_APP_V2.app_instance_schema.DWELL_CATEGORY(60) AS LONGER_VISIT;
+    CAMERA_ID,
+    TS_SECOND,
+    TRACK_ID,
+    CLASS_NAME,
+    CONFIDENCE,
+    ZONE_ID
+FROM <installed_app_name>.app_instance_schema.CV_DETECTIONS
+LIMIT 10;
 ```
 
-### Calculate dwell visits
+### Calculate Behaviour Categories
+
+```sql
+SELECT
+    <installed_app_name>.app_instance_schema.DWELL_CATEGORY(7)
+        AS SHORT_VISIT,
+    <installed_app_name>.app_instance_schema.DWELL_CATEGORY(60)
+        AS LONGER_VISIT;
+```
+
+### Calculate Dwell Visits
 
 ```sql
 WITH sequenced AS (
@@ -318,7 +305,7 @@ WITH sequenced AS (
             PARTITION BY TRACK_ID, ZONE_ID
             ORDER BY TS_SECOND
         ) AS visit_group
-    FROM CV_APP_V2.app_instance_schema.CV_DETECTIONS
+    FROM <installed_app_name>.app_instance_schema.CV_DETECTIONS
 ),
 visits AS (
     SELECT
@@ -326,50 +313,56 @@ visits AS (
         ZONE_ID,
         visit_group,
         COUNT(*) AS DWELL_SECONDS
-    FROM sequenced
-    GROUP BY TRACK_ID, ZONE_ID, visit_group
+    FROM seque*ced
+    GROUP BY TRACK_ID, ZONE_ID* visit_group
 )
 SELECT
-    TRACK_ID,
+    TRACK_ID*
     ZONE_ID,
     DWELL_SECONDS,
-    CV_APP_V2.app_instance_schema.DWELL_CATEGORY(DWELL_SECONDS) AS BEHAVIOUR
-FROM visits
+ *  <installed_app_name>.app_instanc*_schema.DWELL_CATEGORY(DWELL_SECON*S)
+        AS BEHAVIOUR
+FROM visit*
 ORDER BY DWELL_SECONDS DESC;
 ```
+*### Example Procedure Call
 
-### Example procedure call
+```sql*CALL <installed_app_name>.app_inst*nce_schema.BILLING_EVENT(5700);
+``*
 
-```sql
-CALL CV_APP_V2.app_instance_schema*BILLING_EVENT(570*);
-```
-
-### Verify the consumer ca*era table
-
-```sql
+### Verify Consumer Camera Data
+*```sql
 SELECT *
-FROM <y*ur_database>.<your_schema>.CV_CAME*AS;
+FROM <your_databas*>.<your_schema>.CV_CAMERAS;
 ```
 
-### Verify the consumer*zone table
+#*# Verify Consumer Zone Data
 
-```sql
+```sq*
 SELECT *
-FROM <*our_database>.<your_schema>.CV_ZON*S;
+FROM <your_database>.<yo*r_schema>.CV_ZONES;
 ```
 
-## Expected*Result After Configuration
+## Expect*d Result After Configuration
 
-After *nstallation*and configuration are complete:
+Afte* installation and configuration ar* complete:
 
-*. `CV_CAMERAS` is*bound to the application's `camera*table` reference*
-2. `CV_ZONES` is bound to the app*ication's `zone_table` reference.
-*. The application can read the con*umer's camera and*zone metadata using
-   `SELECT` ac*ess.
-4. Provider detection data is*available through the application'*
-   `CV_DETECTIONS` view.
-5. The S*reamlit dashboard displays the con*igured camera and dwell-time
-   an*lytics.
+1. The consumer's `CV_*AMERAS` table is bound to the appl*cation's `camera_table` reference.*2. The consumer's `CV_ZONES` table*is bound to the application's `zon*_table` reference.
+3. The applicat*on reads the consumer's camera and*zone metadata using `SELECT` acces*.
+4. Provider-supplied detection d*ta is available through the applic*tion's `CV_DETECTIONS` view.
+5. Th* Streamlit dashboard displays came*a information, dwell-time analytic*, zone occupancy, and behaviour ca*egories.
 
-No local Python environme*t, local Streamlit server, `.env` *ile, Snowflake
-username/password, *r manual application package insta*lation is required.
+No local Python environm*nt, local Streamlit server, `.env`*file, Snowflake username/password,*consumer video upload, or manual a*plication package installation is *equired.
+
+## Current Marketplace R*lease
+
+This documentation correspo*ds to the following Marketplace re*ease:
+
+| Item | Value |
+|---|---|
+* Listing Name | `DWELL_TIME_ANALYTICS_V1.0` |
+| Marketplace Title | `Dwell Time Analytics V1.0` |
+| Version | `V2` |
+| Patch | `0` |
+
+This README describes the functionality available in this Marketplace release.

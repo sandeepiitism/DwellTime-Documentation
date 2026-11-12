@@ -188,8 +188,8 @@ Example insert:
 INSERT INTO <your_database>.<your_schema>.CV_ZONES
     (ZONE_ID, ZONE_NAME, X_MIN, Y_MIN, X_MAX, Y_MAX)
 VALUES
-    ('Z1', 'ENTRANCE', 0,   260, 320,  720),
-    ('Z2', 'AISLE',    320, 0,   900,  720),
+    ('Z1', 'ENTRANCE', 0, 260, 320, 720),
+    ('Z2', 'AISLE', 320, 0, 900, 720),
     ('Z3', 'CHECKOUT', 900, 200, 1280, 720);
 ```
 
@@ -260,7 +260,7 @@ The following objects are available:
 | Object | Type | Purpose |
 |---|---|---|
 | `CV_DETECTIONS` | View | Provides access to provider-supplied detection data |
-| `DWELL_CATEGORY(INT)` | Python UDF | Maps dwell duration to `PASSING`, `BROWSING`, `ENGAGED`, or `LOITERING`; `NULL` maps to `UNKNOWN` |
+| `DWELL_CATEGORY(INT)` | Python UDF | Maps dwell duration to `PASSING`, `BROWSING`, `ENGAGED`, or `LOITERING`. `NULL` maps to `UNKNOWN` |
 | `BILLING_EVENT(INT)` | Python procedure | Returns a confirmation string for the application's billing-event example |
 | `UPDATE_REFERENCE(STRING, STRING, STRING)` | SQL procedure | Callback used when adding, removing, or clearing a table reference |
 | `STREAMLIT` | Streamlit object | Provides the dwell-time analytics dashboard |
@@ -317,52 +317,29 @@ visits AS (
     GROUP BY TRACK_ID, ZONE_ID* visit_group
 )
 SELECT
-    TRACK_ID*
+    TRACK_ID
     ZONE_ID,
     DWELL_SECONDS,
- *  <installed_app_name>.app_instanc*_schema.DWELL_CATEGORY(DWELL_SECON*S)
+ <installed_app_name>.app_instance_schema.DWELL_CATEGORY(DWELL_SECONDS)
         AS BEHAVIOUR
 FROM visit*
 ORDER BY DWELL_SECONDS DESC;
 ```
 *### Example Procedure Call
 
-```sql*CALL <installed_app_name>.app_inst*nce_schema.BILLING_EVENT(5700);
+```sql*CALL <installed_app_name>.app_instance_schema.BILLING_EVENT(5700);
 ``*
 
 ### Verify Consumer Camera Data
 *```sql
 SELECT *
-FROM <your_databas*>.<your_schema>.CV_CAMERAS;
+FROM <your_database>.<your_schema>.CV_CAMERAS;
 ```
 
-#*# Verify Consumer Zone Data
+### Verify Consumer Zone Data
 
-```sq*
+```sql
 SELECT *
-FROM <your_database>.<yo*r_schema>.CV_ZONES;
+FROM <your_database>.<your_schema>.CV_ZONES;
 ```
 
-## Expect*d Result After Configuration
-
-Afte* installation and configuration ar* complete:
-
-1. The consumer's `CV_*AMERAS` table is bound to the appl*cation's `camera_table` reference.*2. The consumer's `CV_ZONES` table*is bound to the application's `zon*_table` reference.
-3. The applicat*on reads the consumer's camera and*zone metadata using `SELECT` acces*.
-4. Provider-supplied detection d*ta is available through the applic*tion's `CV_DETECTIONS` view.
-5. Th* Streamlit dashboard displays came*a information, dwell-time analytic*, zone occupancy, and behaviour ca*egories.
-
-No local Python environm*nt, local Streamlit server, `.env`*file, Snowflake username/password,*consumer video upload, or manual a*plication package installation is *equired.
-
-## Current Marketplace R*lease
-
-This documentation correspo*ds to the following Marketplace re*ease:
-
-| Item | Value |
-|---|---|
-* Listing Name | `DWELL_TIME_ANALYTICS_V1.0` |
-| Marketplace Title | `Dwell Time Analytics V1.0` |
-| Version | `V2` |
-| Patch | `0` |
-
-This README describes the functionality available in this Marketplace release.
